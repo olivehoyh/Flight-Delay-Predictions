@@ -1,0 +1,36 @@
+#declare control parameters
+control <- trainControl(method="repeatedcv", number=10, repeats=5,classProbs=TRUE,allowParallel = TRUE)
+#build GBM model
+set.seed(7)
+dep.modelGbm <- train(delay.cat~Month+MvgAvgDepDelay+Dest+Carrier+DayOfWeek+major,data=depart.train,method="gbm", trControl=control, verbose=FALSE)
+
+#predict GBM model arrucracy 0.8486748
+depart.test$gbm.pred= predict(dep.modelGbm, newdata = depart.test)
+
+#confusion matrix
+dep.gbm.conf = confusionMatrix(data=depart.test$gbm.pred,
+                reference=depart.test$delay.cat,
+                positive='Delayed')
+
+#build ROCC model
+set.seed(7)
+dep.modelbrocc<- train(delay.cat~Month+MvgAvgDepDelay+Dest+Carrier+DayOfWeek+major,data=depart.train, method="rocc", control=control)
+depart.test$roc.pred = predict(dep.modelbrocc, newdata= depart.test)
+
+#confusion matrix
+dep.roc.conf = confusionMatrix(data=depart.test$roc.pred ,
+                reference=depart.test$delay.cat,
+                positive='Delayed')
+
+#build random forest model: cv error rate 11.06%
+set.seed(7)
+dep.modelrf <- train(delay.cat~Month+MvgAvgDepDelay+Dest+Carrier+DayOfWeek+major,data=depart.train,
+                          method = "parRF",
+                          trControl=control, metric = "ROC")
+#predict random forest value
+depart.test$rf.pred = predict(dep.modelrf, newdata = depart.test)
+
+#confusion matrix rf
+dep.rf.conf = confusionMatrix(data=depart.test$rf.pred,
+                reference=depart.test$delay.cat,
+                positive='Delayed')
