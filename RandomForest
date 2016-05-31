@@ -1,0 +1,19 @@
+###Random Forest for Flights Departing Pittsburgh
+
+#create train set for flights leaving pittsburgh
+trainIndex2 <- createDataPartition(departure.df$delay.cat, p = .8,
+                                  list = FALSE,
+                                  times = 1)
+#partition data 
+depart.train <- departure.df[ trainIndex2,]
+depart.test  <- departure.df[-trainIndex2,]
+
+#rf model
+dest.fit <- randomForest(delay.cat~Month+MvgAvgDepDelay +Dest+Carrier+DayOfWeek+major, data=depart.train, ntree=1000, importance=TRUE)
+
+#tree Diagram of Random Forest
+depart.party= as.party(rpart(delay.cat~Month+MvgAvgDepDelay +Dest+Carrier+DayOfWeek+major, data=depart.train))
+plot(arrival.party)
+
+#variable importance
+varImpPlot(dest.fit,pch= 1,main="Variable Importance Plot",col="#1c61b6")
